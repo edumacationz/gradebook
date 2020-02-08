@@ -6,24 +6,53 @@ namespace GradeBook
 
   public delegate void GradeAddedDelegate(object sender, EventArgs args);
 
-  public class Book
+
+  public class NamedObject
   {
 
-    public event GradeAddedDelegate GradeAdded;
-    private List<double> grades;
-
+    public NamedObject(string name)
+    {
+      Name = name;
+    }
     public string Name
     {
       get;
       set;
     }
+  }
+
+  public abstract class Book : NamedObject, IBook
+  {
+    public Book(string name) : base(name)
+    {
+    }
+
+    public abstract event GradeAddedDelegate GradeAdded;
+
+    public abstract void AddGrade(double grade);
+
+    public abstract Statistics GetStatistics();
+  }
+
+  public interface IBook
+  {
+    event GradeAddedDelegate GradeAdded;
+    void AddGrade(double grade);
+    Statistics GetStatistics();
+    string Name { get; }
+  }
+
+  public class InMemoryBook : Book
+  {
+
+    public override event GradeAddedDelegate GradeAdded;
+    private List<double> grades;
 
     const string CATEGORY = "Science";
 
 
-    public Book(string name)
+    public InMemoryBook(string name) : base(name)
     {
-      Name = name;
       grades = new List<double>();
     }
 
@@ -50,50 +79,13 @@ namespace GradeBook
       }
     }
 
-
-
-    public Statistics GetStatistics()
+    public override Statistics GetStatistics()
     {
-      var result = new Statistics();
-      result.Low = double.MaxValue;
-      result.High = double.MinValue;
-      var sum = 0.0;
-
-      var index = 0;
-
-      while (index < grades.Count)
-      {
-        var grade = grades[index++];
-        sum += grade;
-        result.Low = Math.Min(result.Low, grade);
-        result.High = Math.Max(result.High, grade);
-      }
-
-      result.Average = sum / grades.Count;
-
-      switch (result.Average)
-      {
-        case var d when d >= 90:
-          result.Letter = 'A';
-          break;
-        case var d when d >= 80:
-          result.Letter = 'B';
-          break;
-        case var d when d >= 70:
-          result.Letter = 'C';
-          break;
-        case var d when d >= 60:
-          result.Letter = 'D';
-          break;
-        default:
-          result.Letter = 'F';
-          break;
-      }
-
-      return result;
+      return new Statistics().Calculate(grades);
     }
 
-    public void AddGrade(double grade)
+
+    public override void AddGrade(double grade)
     {
       if (grade <= 100 && grade >= 0)
       {

@@ -8,11 +8,25 @@ namespace GradeBook
     static void Main(string[] args)
     {
 
-      var book = new Book("Jason's Grade Book");
+      IBook book = new DiskBook("Jason's Grade Book");
       book.GradeAdded += OnGradeAdded;
 
       string input;
 
+      input = EnterGrades(book);
+
+      var stats = book.GetStatistics();
+
+      Console.WriteLine($"For the book labeled {book.Name}");
+      Console.WriteLine($"The average is {stats.Average:N1}");
+      Console.WriteLine($"The lowest is {stats.Low}");
+      Console.WriteLine($"The highest is {stats.High}");
+      Console.WriteLine($"The letter grade is {stats.Letter}");
+    }
+
+    private static string EnterGrades(IBook book)
+    {
+      string input;
       do
       {
         Console.WriteLine("Enter a new grade. To finish enter 'q'");
@@ -37,15 +51,7 @@ namespace GradeBook
           Console.WriteLine($"The provided grade is not within an acceptable range(0-100) {input}");
         }
       } while (input != "q");
-
-
-      var stats = book.GetStatistics();
-
-      Console.WriteLine($"For the book labeled {book.Name}");
-      Console.WriteLine($"The average is {stats.Average:N1}");
-      Console.WriteLine($"The lowest is {stats.Low}");
-      Console.WriteLine($"The highest is {stats.High}");
-      Console.WriteLine($"The letter grade is {stats.Letter}");
+      return input;
     }
 
     static void OnGradeAdded(object sender, EventArgs e)
